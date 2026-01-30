@@ -1,0 +1,14 @@
+{
+  "port": 3001,
+  "frontendOrigin": "*",
+  "models": {
+    "executor": "gpt-4o-mini",
+    "presenter": "gpt-4o-mini"
+  },
+  "paper": {
+    "cols": 60
+  },
+  "executor": {
+    "maxSteps": 6
+  }
+}
