@@ -1,0 +1,328 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* ===== layout variables for long App.jsx frame ===== */
+  --topbar-h: 44px;
+  --sidebar-w: 320px;
+  --chat-w: 420px;
+
+  --divider: rgba(255, 255, 255, 0.10);
+  --panel: rgba(255, 255, 255, 0.04);
+  --panel-2: rgba(255, 255, 255, 0.06);
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+/* ✅ FIX: do NOT center the whole app (Vite default breaks your frame) */
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+}
+
+body {
+  /* was: display:flex; place-items:center; min-height:100vh; */
+  display: block;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+/* Keep these defaults (ok) */
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* =======================================================================
+   Minimal CSS to make the "long App.jsx" frame work (topbar + panes)
+   ======================================================================= */
+
+/* Make root fill viewport */
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Topbar */
+.topbar[data-react="true"],
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--divider);
+  background: color-mix(in srgb, #242424 88%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+.tbLeft,
+.tbCenter,
+.tbRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.clockWidget {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid var(--divider);
+  background: var(--panel);
+  border-radius: 999px;
+}
+
+.clockSvg {
+  width: 16px;
+  height: 16px;
+  opacity: 0.9;
+}
+
+#clockTime {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  opacity: 0.9;
+}
+
+.tbAlign button {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--divider);
+  background: var(--panel);
+}
+
+.themeToggle {
+  position: relative;
+  width: 44px;
+  height: 28px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--divider);
+  background: var(--panel);
+}
+
+.themeToggle .themeThumb {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: color-mix(in srgb, white 14%, transparent);
+}
+
+.themeToggle .themeIcon {
+  display: none; /* skeleton only; icons not required for layout */
+}
+
+/* Resizer grips */
+.topbarResizer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 6px;
+  cursor: row-resize;
+}
+
+.sidebarResizer,
+.chatResizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+  z-index: 5;
+}
+
+.leftPane {
+  position: relative;
+}
+.leftPane .sidebarResizer {
+  right: -4px;
+}
+
+.chat {
+  position: relative;
+}
+.chat .chatResizer {
+  left: -4px;
+}
+
+/* Main app layout */
+.app[data-react="true"],
+.app {
+  height: calc(100vh - var(--topbar-h));
+  display: flex;
+  overflow: hidden;
+}
+
+/* Left pane */
+.leftPane {
+  width: var(--sidebar-w);
+  min-width: 260px;
+  max-width: 560px;
+  border-right: 1px solid var(--divider);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Middle pane */
+.middlePane {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Right chat pane */
+aside.chat {
+  width: var(--chat-w);
+  min-width: 320px;
+  max-width: 620px;
+  border-left: 1px solid var(--divider);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Chat inner structure */
+.chat .wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.panelLabel {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--divider);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.scrollArea {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ⚠️ NOTE: class ".bar" might conflict with paper rows in styles.css
+   If you see conflicts, rename this selector to ".chatBar" and update App.jsx.
+   For now we keep as-is because this is your current index.css. */
+.bar {
+  flex: 0 0 auto;
+  border-top: 1px solid var(--divider);
+  padding: 10px 12px;
+  background: color-mix(in srgb, #242424 92%, transparent);
+}
+
+/* Generic card fallback */
+.card {
+  border: 1px solid var(--divider);
+  background: var(--panel);
+  border-radius: 12px;
+}
+
+.muted {
+  opacity: 0.7;
+}
+
+.panel {
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  background: var(--panel-2);
+  overflow: hidden;
+  margin-top: 10px;
+}
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--divider);
+}
+.panelBody {
+  padding: 10px 12px;
+}
+
+/* ======================================================================= */
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+    --divider: rgba(0, 0, 0, 0.10);
+    --panel: rgba(0, 0, 0, 0.03);
+    --panel-2: rgba(0, 0, 0, 0.04);
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+
+  .topbar[data-react="true"],
+  .topbar {
+    background: color-mix(in srgb, #ffffff 92%, transparent);
+  }
+
+  .bar {
+    background: color-mix(in srgb, #ffffff 92%, transparent);
+  }
+}

@@ -1,0 +1,862 @@
+/* ==========================================================================
+   styles.css — Unified "UI hiện tại" + polish theo "UI xịn"
+   - Giữ layout + diff rules (đỏ ghost + xanh newLineFull)
+   - Thêm theme variables để các block "UI xịn" ăn đúng màu
+   - AIBubble giữ logic cũ, chỉ đổi class + style mapping
+   ========================================================================== */
+
+/* =========================
+   0) Reset Vite-ish basics
+   ========================= */
+   :root {
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* App full-viewport */
+  html, body, #root {
+    height: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+  
+  html { overflow: hidden !important; }
+  
+  body {
+    background: var(--bg, #f5f1ea) !important;
+    color: var(--paper-text, #1c1a17) !important;
+    width: 100vw !important;
+    height: 100vh !important;
+  }
+  
+  #root {
+    position: relative !important;
+    background: var(--bg, #f5f1ea) !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    overflow: hidden !important;
+  }
+  
+  /* =========================
+     1) Theme variables (minimal)
+     ========================= */
+  :root{
+    --bg: #f5f1ea;
+    --panel: rgba(255,255,255,0.78);
+    --bg-soft: rgba(0,0,0,0.03);
+    --border: rgba(28,26,23,0.10);
+    --muted: rgba(28,26,23,0.62);
+    --paper-text: rgba(0,0,0,0.86);
+  
+    --shadow-soft: 0 1px 2px rgba(28,26,23,0.05), 0 10px 26px rgba(28,26,23,0.08);
+    --accent-ring: rgba(59,130,246,0.28);
+  
+    --code-bg: rgba(0,0,0,0.04);
+  
+    /* Diff colors */
+    --diff-del-bg: #ffecec;
+    --diff-new-bg: #eafff2;
+  }
+  
+  :root[data-theme="dark"]{
+    --bg: #0f0e0d;
+    --panel: rgba(20,18,16,0.72);
+    --bg-soft: rgba(255,255,255,0.05);
+    --border: rgba(255,255,255,0.10);
+    --muted: rgba(255,255,255,0.62);
+    --paper-text: rgba(255,255,255,0.88);
+  
+    --shadow-soft: 0 1px 2px rgba(0,0,0,0.35), 0 12px 32px rgba(0,0,0,0.45);
+    --accent-ring: rgba(59,130,246,0.30);
+  
+    --code-bg: #141210;
+  
+    --diff-del-bg: rgba(239, 68, 68, 0.16);
+    --diff-new-bg: rgba(16, 185, 129, 0.16);
+  }
+  
+  /* =========================
+     2) Layout primitives (UI hiện tại)
+     ========================= */
+  .page {
+    padding: 16px;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    height: 100vh;
+    box-sizing: border-box;
+  }
+  
+  .split {
+    display: flex;
+    gap: 12px;
+    height: calc(100vh - 32px);
+  }
+  
+  .left, .right {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  h3 {
+    margin: 0 0 8px;
+    color: var(--paper-text);
+  }
+  
+  /* =========================
+     3) Cards / containers (unify with vars)
+     ========================= */
+  .card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .chat {
+    flex: 1;
+    overflow: auto;
+    padding: 12px;
+    background: transparent;
+  }
+  
+  .paper {
+    flex: 1;
+    overflow: auto;
+    padding: 12px;
+    background: rgba(0,0,0,0.02);
+  }
+  :root[data-theme="dark"] .paper {
+    background: rgba(255,255,255,0.03);
+  }
+  
+  /* Message blocks */
+  .msg {
+    padding: 10px 12px;
+    border-top: 1px solid rgba(28,26,23,0.06);
+  }
+  .msg:first-child { border-top: none; }
+  :root[data-theme="dark"] .msg { border-top-color: rgba(255,255,255,0.08); }
+  
+  .role {
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--paper-text);
+  }
+  
+  /* Bubble base */
+  .bubble {
+    border: 1px solid rgba(28,26,23,0.08);
+    border-radius: 12px;
+    padding: 10px;
+    background: rgba(255,255,255,0.55);
+  }
+  :root[data-theme="dark"] .bubble {
+    border-color: rgba(255,255,255,0.10);
+    background: rgba(18,16,14,0.55);
+  }
+  
+  /* Old AI bubble hint (kept, but aiBubble style will override) */
+  .bubble.ai {
+    background: rgba(255,255,255,0.45);
+    border-color: rgba(28,26,23,0.10);
+  }
+  :root[data-theme="dark"] .bubble.ai {
+    background: rgba(18,16,14,0.45);
+    border-color: rgba(255,255,255,0.10);
+  }
+  
+  /* Generic pre */
+  pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    font-family: ui-monospace, Menlo, Consolas, SFMono-Regular, Monaco, "Liberation Mono", monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--paper-text);
+  }
+  
+  /* Input row */
+  .inputrow {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  
+  textarea {
+    flex: 1;
+    height: 92px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 10px;
+    background: rgba(255,255,255,0.7);
+    color: var(--paper-text);
+    resize: none;
+    outline: none;
+  }
+  :root[data-theme="dark"] textarea {
+    background: rgba(18,16,14,0.65);
+  }
+  
+  textarea:focus {
+    box-shadow: 0 0 0 2px var(--accent-ring);
+    border-color: rgba(59,130,246,0.30);
+  }
+  
+  button {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.7);
+    color: var(--paper-text);
+    cursor: pointer;
+  }
+  :root[data-theme="dark"] button {
+    background: rgba(18,16,14,0.65);
+  }
+  
+  button:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+  }
+  
+  /* Small meta */
+  .muted {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  
+  /* Pills / toolbar */
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .pill {
+    font-size: 12px;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.55);
+    color: var(--paper-text);
+  }
+  :root[data-theme="dark"] .pill {
+    background: rgba(18,16,14,0.55);
+  }
+  
+  /* =========================
+     4) Paper header + rows + diff visuals
+     ========================= */
+  .paperMeta{
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  
+    position: sticky;
+    top: 0;
+    background: rgba(0,0,0,0.02);
+    padding: 6px 8px;
+    border: 1px solid rgba(28,26,23,0.08);
+    border-radius: 10px;
+    backdrop-filter: blur(6px);
+  }
+  :root[data-theme="dark"] .paperMeta{
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.10);
+  }
+  
+  /* Paper rows */
+  .row{
+    display:flex;
+    gap: 10px;
+    align-items: stretch; /* highlight fill height */
+    font-family: ui-monospace, Menlo, Consolas, SFMono-Regular, Monaco, "Liberation Mono", monospace;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  
+  .ln{
+    width: 52px;
+    text-align: right;
+    color: rgba(28,26,23,0.50);
+    user-select:none;
+    flex: 0 0 auto;
+  }
+  :root[data-theme="dark"] .ln{
+    color: rgba(255,255,255,0.46);
+  }
+  
+  .bar{
+    width: 18px;
+    text-align:center;
+    color: rgba(28,26,23,0.45);
+    user-select:none;
+    flex: 0 0 auto;
+  }
+  :root[data-theme="dark"] .bar{
+    color: rgba(255,255,255,0.42);
+  }
+  
+  /* IMPORTANT: .txt must be block so full-width highlights work */
+  .txt{
+    flex: 1;
+    white-space: pre;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    color: var(--paper-text);
+  }
+  
+  /* DIFF: only red + green */
+  .delLine .txt{
+    background: var(--diff-del-bg);
+    border-radius: 6px;
+    padding: 0 8px;
+    display: block;
+    width: 100%;
+  }
+  
+  /* hide ln for ghost row */
+  .delLine .ln{
+    visibility: hidden;
+  }
+  
+  /* green full-line highlight */
+  .newLineFull{
+    background: var(--diff-new-bg);
+    border-radius: 6px;
+    padding: 0 8px;
+    display: block;
+    width: 100%;
+  }
+  
+  /* =========================
+     5) Legacy panel styles (App.jsx demo)
+     - Keep for App.jsx hiện tại (preview/events/reply)
+     ========================= */
+  .statusbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    background: rgba(255,255,255,0.55);
+  }
+  :root[data-theme="dark"] .statusbar{
+    background: rgba(18,16,14,0.55);
+  }
+  
+  .badge{
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.03);
+  }
+  :root[data-theme="dark"] .badge{
+    background: rgba(255,255,255,0.06);
+  }
+  
+  .badge.working{ background: rgba(59, 130, 246, 0.10); border-color: rgba(59, 130, 246, 0.22); }
+  .badge.done{ background: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.22); }
+  .badge.error{ background: rgba(239, 68, 68, 0.10); border-color: rgba(239, 68, 68, 0.22); }
+  
+  .panel{
+    border: 1px solid rgba(28,26,23,0.08);
+    border-radius: 10px;
+    padding: 10px;
+    background: rgba(255,255,255,0.52);
+    margin-bottom: 10px;
+  }
+  :root[data-theme="dark"] .panel{
+    border-color: rgba(255,255,255,0.10);
+    background: rgba(18,16,14,0.50);
+  }
+  
+  .panelHeader{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    user-select:none;
+    margin-bottom: 6px;
+  }
+  
+  .panelToggle{
+    font-size: 10px;
+    opacity: 0.75;
+    margin-left: 8px;
+  }
+  
+  .panelBody{
+    max-height: 180px;
+    overflow:auto;
+    border-radius: 8px;
+    border: 1px solid rgba(28,26,23,0.06);
+    padding: 8px;
+    background: rgba(0,0,0,0.02);
+  }
+  :root[data-theme="dark"] .panelBody{
+    border-color: rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+  }
+  
+  /* =========================
+     6) AI Bubble – polish to match "UI xịn"
+     - Dùng class mới: aiBubble/aiStatusbar/aiPanel...
+     - AIBubble chỉ cần đổi className mapping là ăn style
+     ========================= */
+  
+  .aiBubble {
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+  }
+  
+  .aiStatusbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-soft);
+  }
+  
+  .aiStatusText {
+    font-size: 12px;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--muted);
+  }
+  
+  .aiBadge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.04);
+    color: var(--paper-text);
+  }
+  :root[data-theme="dark"] .aiBadge { background: rgba(255,255,255,0.06); }
+  
+  .aiBadge.working {
+    background: rgba(59, 130, 246, 0.10);
+    border-color: rgba(59, 130, 246, 0.22);
+  }
+  .aiBadge.done {
+    background: rgba(16, 185, 129, 0.10);
+    border-color: rgba(16, 185, 129, 0.22);
+  }
+  .aiBadge.error {
+    background: rgba(239, 68, 68, 0.10);
+    border-color: rgba(239, 68, 68, 0.22);
+  }
+  
+  .aiPanel {
+    margin: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.50);
+    overflow: hidden;
+  }
+  :root[data-theme="dark"] .aiPanel {
+    background: rgba(18,16,14,0.50);
+  }
+  
+  .aiPanelHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 10px;
+    user-select: none;
+    cursor: pointer;
+    background: var(--bg-soft);
+    border-bottom: 1px solid rgba(28,26,23,0.06);
+  }
+  :root[data-theme="dark"] .aiPanelHeader {
+    border-bottom-color: rgba(255,255,255,0.08);
+  }
+  
+  .aiPanelHeader:hover { background: rgba(0,0,0,0.05); }
+  :root[data-theme="dark"] .aiPanelHeader:hover { background: rgba(255,255,255,0.07); }
+  
+  .aiPanelHeader:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent-ring);
+  }
+  
+  .aiPanelTitle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    color: var(--paper-text);
+  }
+  
+  .aiPanelMeta {
+    font-size: 11px;
+    opacity: 0.85;
+    white-space: nowrap;
+    color: var(--muted);
+  }
+  
+  .aiPanelBody {
+    padding: 10px;
+  }
+  
+  .aiPre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--paper-text);
+  }
+  
+  .aiReply {
+    margin: 0 12px 12px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px dashed rgba(28,26,23,0.14);
+    background: rgba(0,0,0,0.02);
+  }
+  :root[data-theme="dark"] .aiReply {
+    border-color: rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.04);
+  }
+  
+  /* If AIBubble still contains old classes (.statusbar/.panel/...) inside aiBubble,
+     neutralize them so ai* wins cleanly */
+  .aiBubble .statusbar { border: none; background: transparent; margin-bottom: 0; padding: 0; }
+  .aiBubble .panel { border: none; padding: 0; background: transparent; margin-bottom: 0; }
+  .aiBubble .panelBody { border: none; background: transparent; max-height: none; padding: 0; }
+  
+  /* =========================
+     7) Optional: code-ish blocks (safe)
+     - Markdown/graph tạm bỏ => không cần thêm gì đặc biệt
+     ========================= */
+  code, .code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  }
+/* ==========================================================================
+   8) Long-App Layout Support (topbar + 3 panes + resizers)
+   - Add ONLY layout + minimal visuals, keep your existing tokens
+   - Does NOT change your diff rules
+   ========================================================================== */
+
+/* --- Ensure the app uses full viewport and not the old .page centering model --- */
+/* Already set in section 0: html/body/#root overflow hidden & full size. Good. */
+
+/* --- Topbar frame (as in long App.jsx) --- */
+.topbar {
+  position: relative;
+  height: var(--topbar-h, 44px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: var(--shadow-soft);
+  z-index: 20;
+}
+
+.tbLeft, .tbCenter, .tbRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.clockWidget {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.55);
+  border-radius: 999px;
+}
+:root[data-theme="dark"] .clockWidget {
+  background: rgba(18,16,14,0.55);
+}
+
+.clockSvg {
+  width: 16px;
+  height: 16px;
+}
+
+#clockTime {
+  font-family: ui-monospace, Menlo, Consolas, SFMono-Regular, Monaco, "Liberation Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--paper-text);
+  opacity: 0.9;
+}
+
+.tbAlign button {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.55);
+}
+:root[data-theme="dark"] .tbAlign button {
+  background: rgba(18,16,14,0.55);
+}
+
+.themeToggle {
+  position: relative;
+  width: 44px;
+  height: 28px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.55);
+}
+:root[data-theme="dark"] .themeToggle {
+  background: rgba(18,16,14,0.55);
+}
+
+.themeThumb {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: rgba(0,0,0,0.08);
+}
+:root[data-theme="dark"] .themeThumb {
+  background: rgba(255,255,255,0.10);
+}
+
+/* Optional: show icons if present; your long JSX has them */
+.themeIcon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  opacity: 0.75;
+  color: var(--paper-text);
+  pointer-events: none;
+}
+.themeIcon.sun { left: 7px; }
+.themeIcon.moon { right: 7px; }
+
+/* --- Topbar resizer grip (visual + hit area) --- */
+.topbarResizer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 6px;
+  cursor: row-resize;
+}
+.topbarResizer::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 2px;
+  width: 56px;
+  height: 2px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgba(0,0,0,0.18);
+  opacity: 0.45;
+}
+:root[data-theme="dark"] .topbarResizer::after {
+  background: rgba(255,255,255,0.22);
+}
+
+/* --- Main app: 3 panes --- */
+.app {
+  height: calc(100vh - var(--topbar-h, 44px));
+  display: flex;
+  overflow: hidden;
+}
+
+/* Left pane (Sidebar) */
+.leftPane {
+  position: relative;
+  width: var(--sidebar-w, 320px);
+  min-width: 260px;
+  max-width: 560px;
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+}
+
+/* Middle pane (Paper area) */
+.middlePane {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Right pane (Chat) */
+aside.chat {
+  position: relative;
+  width: var(--chat-w, 420px);
+  min-width: 320px;
+  max-width: 620px;
+  border-left: 1px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+}
+
+/* --- Vertical resizers --- */
+.sidebarResizer,
+.chatResizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  z-index: 10;
+  cursor: col-resize;
+}
+.leftPane .sidebarResizer { right: -5px; }
+aside.chat .chatResizer { left: -5px; }
+
+.sidebarResizer::after,
+.chatResizer::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 56px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: rgba(0,0,0,0.18);
+  opacity: 0.35;
+}
+:root[data-theme="dark"] .sidebarResizer::after,
+:root[data-theme="dark"] .chatResizer::after {
+  background: rgba(255,255,255,0.22);
+}
+
+/* --- Chat inner structure (wrap/scroll/messages/bar) --- */
+.chat .wrap {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.panelLabel {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--paper-text);
+}
+
+.scrollArea {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Bottom bar under chat (same name "bar" as your paper row separator exists, but it's class ".bar" too!)
+   IMPORTANT: you already have ".bar" for the paper row column (the "|" column).
+   That is a conflict: ".bar" is used in 2 meanings.
+   Fix: scope the chat bottom bar styling to ".chat .bar" only.
+*/
+.chat .bar {
+  flex: 0 0 auto;
+  border-top: 1px solid var(--border);
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.55);
+}
+:root[data-theme="dark"] .chat .bar {
+  background: rgba(18,16,14,0.55);
+}
+
+/* Also scope the paper row "bar" column to paper rows only, to reduce collisions */
+.paper .bar,
+.paperBody .bar,
+.row .bar {
+  /* keep your existing .bar styles, but make sure chat doesn't override */
+}
+
+/* --- Optional: make cards inside panes look consistent --- */
+.leftPane .card,
+.middlePane .card,
+.chat .card {
+  box-shadow: var(--shadow-soft);
+}
+
+/* --- Prevent your old .chat selector (card) from hijacking aside.chat layout ---
+   You currently have:
+     .chat { flex:1; overflow:auto; padding:12px; background:transparent; }
+   That class name is reused by aside.chat in long layout.
+   So we scope the old "card chat" styling to ".card.chat" only.
+*/
+.card.chat {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+  background: transparent;
+}
+
+/* Neutralize the old global ".chat { ... }" so aside.chat isn't broken */
+.chat {
+  /* if this selector matches aside.chat, it breaks. Keep it minimal. */
+  padding: 0;
+  overflow: hidden;
+  flex: initial;
+  background: transparent;
+}
+
+/* --- If you want middle pane content (paper card) to fill height nicely --- */
+.middlePane > .card {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* --- Pointer affordance for grips (nice, optional) --- */
+.sidebarResizer:hover::after,
+.chatResizer:hover::after,
+.topbarResizer:hover::after {
+  opacity: 0.65;
+}
